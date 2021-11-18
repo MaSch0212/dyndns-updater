@@ -12,7 +12,7 @@ namespace DyndnsUpdater.Server.Controllers
     public class CloudflareController : ControllerBase
     {
         [HttpGet]
-        public async Task<IActionResult> UpdateZoneRecord(string? token = null, string? zone = null, string? record = null, string? ipv4 = null)
+        public async Task<IActionResult> UpdateZoneRecord(string? token = null, string? zone = null, string? record = null, string? ipv4 = null, bool proxied = false)
         {
             if (string.IsNullOrWhiteSpace(token))
                 return BadRequest("token query parameter is missing.");
@@ -31,7 +31,7 @@ namespace DyndnsUpdater.Server.Controllers
             if (zones.Result.Count < 1)
                 return NotFound($"A zone with the name \"{zone}\" was not found.");
 
-            var recordFullName = $"{record}.{zone}";
+            var recordFullName = record.EndsWith(zone) ? record : $"{record}.{zone}";
             var records = await client.Zones.DnsRecords.GetAsync(zones.Result[0].Id, new DnsRecordFilter
             {
                 Name = recordFullName,
@@ -48,7 +48,7 @@ namespace DyndnsUpdater.Server.Controllers
                     {
                         Name = recordFullName,
                         Type = DnsRecordType.A,
-                        Proxied = false,
+                        Proxied = proxied,
                         Content = ipv4,
                     });
             }
@@ -61,7 +61,7 @@ namespace DyndnsUpdater.Server.Controllers
                     {
                         Name = recordFullName,
                         Type = DnsRecordType.A,
-                        Proxied = false,
+                        Proxied = proxied,
                         Content = ipv4,
                     });
             }
