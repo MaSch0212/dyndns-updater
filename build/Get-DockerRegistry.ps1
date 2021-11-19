@@ -1,4 +1,4 @@
-if ($null -eq (Resolve-DnsName marc-nas -DnsOnly -ErrorAction Ignore)) {
+if ($env:DOCKERNONAS -eq "true" -or $null -eq (Resolve-DnsName marc-nas -DnsOnly -ErrorAction Ignore)) {
     $registry = "docker.masch212.de"
 }
 else {
