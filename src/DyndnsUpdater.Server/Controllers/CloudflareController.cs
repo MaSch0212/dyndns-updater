@@ -15,6 +15,13 @@ namespace DyndnsUpdater.Server.Controllers
     [ApiController]
     public class CloudflareController : ControllerBase
     {
+        private ILogger _logger;
+
+        public CloudflareController(ILogger<CloudflareController> logger)
+        {
+            _logger = logger;
+        }
+
         /// <summary>
         /// Adds or updates an A-Record inside a Cloudflare zone.
         /// </summary>
@@ -41,6 +48,8 @@ namespace DyndnsUpdater.Server.Controllers
             [Required] string? ipv4 = null,
             bool proxied = false)
         {
+            _logger.LogInformation($"Updating Cloudflare record {record} of zone {zone} to {ipv4}...");
+
             if (string.IsNullOrWhiteSpace(token))
                 return BadRequest("token query parameter is missing.");
             if (string.IsNullOrWhiteSpace(zone))
@@ -96,6 +105,8 @@ namespace DyndnsUpdater.Server.Controllers
 
             if (result is null || !result.Success)
                 return StatusCode(StatusCodes.Status424FailedDependency, new CloudflareError($"Failed to add or update record \"{recordFullName}\" of zone \"{zones.Result[0].Id}\" on cloudflare", result));
+
+            _logger.LogInformation($"Successfully updated Cloudflare record {record} of zone {zone} to {ipv4}");
             return recordExisted ? StatusCode(StatusCodes.Status201Created) : Ok();
         }
 
